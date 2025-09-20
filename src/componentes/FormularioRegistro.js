@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Imput from './Imput';
 import Boton from './Boton';
 import Contrasena from './Contrasena';
@@ -21,7 +21,8 @@ const FormularioRegistro = () => {
       [name]: value
     }));
 
-    if (errores[name]) {
+    // Validación en tiempo real para el correo y si ya hay errores en otros campos
+    if (name === 'correo' || errores[name]) {
       validarCampo(name, value);
     }
   };
@@ -48,19 +49,23 @@ const FormularioRegistro = () => {
 
       case 'correo':
         const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
         if (!valor.trim()) {
           setErrores(prev => ({ ...prev, correo: 'El correo es obligatorio' }));
           esValido = false;
-        } else if (!regexEmail.test(valor)) {
+        } else if (valor.length > 0 && valor.includes('@') && !regexEmail.test(valor)) {
+          // Solo mostrar error de formato si ya tiene @ y no es válido
           setErrores(prev => ({ ...prev, correo: 'Formato de correo inválido' }));
           esValido = false;
-        } else {
+        } else if (regexEmail.test(valor)) {
+          // Email válido - remover error
           setErrores(prev => {
             const nuevosErrores = { ...prev };
             delete nuevosErrores.correo;
             return nuevosErrores;
           });
         }
+        // Si está escribiendo pero aún no tiene @, no mostrar error
         break;
 
       case 'contrasena':
@@ -100,7 +105,7 @@ const FormularioRegistro = () => {
 
   const manejarEnvio = async (e) => {
     e.preventDefault();
-    
+
     if (!validarFormulario()) {
       return;
     }
@@ -109,10 +114,10 @@ const FormularioRegistro = () => {
 
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       alert('¡Registro exitoso! Bienvenido a nuestra comunidad.');
-      
-      console.log('📝 Datos del formulario:', {
+
+      console.log('Datos del formulario:', {
         nombre: datosFormulario.nombre.trim(),
         correo: datosFormulario.correo.trim(),
         contrasena: '***',
@@ -138,13 +143,13 @@ const FormularioRegistro = () => {
   };
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center p-3" 
-         style={{
-           background: 'linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab)',
-           backgroundSize: '400% 400%',
-           animation: 'gradientShift 15s ease infinite'
-         }}>
-      
+    <div className="min-vh-100 d-flex align-items-center justify-content-center p-3"
+      style={{
+        background: 'linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab)',
+        backgroundSize: '400% 400%',
+        animation: 'gradientShift 15s ease infinite'
+      }}>
+
       <style jsx>{`
         @keyframes gradientShift {
           0% { background-position: 0% 50%; }
@@ -196,7 +201,7 @@ const FormularioRegistro = () => {
         boxShadow: '0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23)',
         overflow: 'hidden'
       }}>
-        
+
         <div className="header-gradient text-white text-center p-4">
           <div className="mb-3">
             <i className="material-icons bounce-icon" style={{
@@ -215,7 +220,7 @@ const FormularioRegistro = () => {
 
         <div className="card-body p-4">
           <form onSubmit={manejarEnvio}>
-            
+
             <Imput
               type="text"
               placeholder="Nombre completo"
@@ -286,12 +291,12 @@ const FormularioRegistro = () => {
           </div>
 
           <div className="d-flex gap-2">
-            <BotonRedes 
-              provider="Google" 
+            <BotonRedes
+              provider="Google"
               onClick={manejarLoginSocial}
             />
-            <BotonRedes 
-              provider="Facebook" 
+            <BotonRedes
+              provider="Facebook"
               onClick={manejarLoginSocial}
             />
           </div>
